@@ -25,8 +25,7 @@ class TestGoodreads(unittest.TestCase):
     def test_book(self):
         book = self.g.book(123)
         assert book.title == 'The Power of One'
-        assert book.isbn == '385732546'
-
+        assert book.isbn == 385732546
 
     def tearDown(self):
         pass
