@@ -27,6 +27,11 @@ class TestGoodreads(unittest.TestCase):
         assert book.title == 'The Power of One'
         assert book.isbn == 385732546
 
+    def test_search(self):
+        results = self.g.book_search("Ender's Game")
+        assert results
+
+
     def tearDown(self):
         pass
 

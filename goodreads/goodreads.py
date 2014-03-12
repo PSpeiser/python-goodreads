@@ -148,6 +148,24 @@ class GoodreadsWork(Bunch):
             'text_reviews_count': work.text_reviews_count,
         })
 
+    @classmethod
+    def from_element(cls, work):
+        w = cls.from_small_element(work)
+        return w
+
+    @classmethod
+    def from_small_element(cls,work):
+        return cls(**{
+            'id':work.id,
+            'title':work.best_book.title,
+            'best_book_id': work.best_book.id,
+            'publication_year':work.original_publication_year,
+            'publication_month':work.original_publication_month,
+            'publication_day':work.original_publication_day,
+            'average_rating':work.average_rating,
+            'ratings_count':work.ratings_count,
+            'text_reviews_count':work.text_reviews_count,
+        })
 
 class GoodreadsBook(Bunch):
 
@@ -612,12 +630,16 @@ class Goodreads(object):
 
     # Book
 
-    def book_search(self,):
+    def book_search(self,q):
         '''
         Find books by title, author, or ISBN.
         '''
-        raise NotImplementedError
-        self.dev_get('search.xml')
+        r = self.dev_get('search.xml',{'q':q})
+        o = object_from_string(r.content)
+        results = o.search.results
+        works = [GoodreadsWork.from_small_element(work) for work in results.iterchildren()]
+        return works
+
         # Parameters:     q: The query text to match against book title, author,
         # and ISBN fields. Supports boolean operators and phrase searching.
         # page: Which page to return (default 1, optional)    key: Developer key
