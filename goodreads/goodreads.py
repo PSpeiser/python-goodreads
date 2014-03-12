@@ -79,6 +79,25 @@ class GoodreadsAuthor(Bunch):
             name=o.name.text
         )
 
+    @classmethod
+    def from_element(cls,author):
+        a = cls.from_small_element(author)
+        return a
+
+
+    @classmethod
+    def from_small_element(cls,author):
+        return cls(**{
+            'id':author.id,
+            'name':author.name,
+            'average_rating':author.average_rating,
+            'ratings_count':author.ratings_count,
+            'text_reviews_count':author.text_reviews_count,
+            'image_url':author.image_url,
+            'small_image_url':author.small_image_url,
+            'link':author.link,
+        })
+
 
 class GoodreadsSeries(Bunch):
 
@@ -161,18 +180,15 @@ class GoodreadsBook(Bunch):
         b.text_reviews_count = book.text_reviews_count
         b.reviews_widget = book.reviews_widget
         b.popular_shelves = [(s.attrib['name'], s.attrib['count'])
-                             for s in book.popular_shelves.iterate_children()]
+                             for s in book.popular_shelves.iterchildren()]
         b.book_links = [{'id': l.id, 'name': l.name, 'link': l.link}
-                        for l in book.book_links.iterate_children()]
+                        for l in book.book_links.iterchildren()]
         b.isbn13 = book.isbn13
         b.asin = book.asin
         b.series = [{'id': sw.id,
                      'position': sw.user_position,
                      'series': GoodreadsSeries.from_element(
-                         sw.series)} for sw in book.series_works.iterate_children()]
-        b.similar_books = [cls.from_small_element(sb)
-                           for sb in book.similar_books.iterate_children()]
-
+                         sw.series)} for sw in book.series_works.iterchildren()]
         return b
 
     @classmethod
@@ -185,7 +201,7 @@ class GoodreadsBook(Bunch):
                         )],
             'format': book.format,
             'pages': book.num_pages,
-            'date': book.published,
+            'date': '-'.join((str(book.publication_year), str(book.publication_month), str(book.publication_day))),
             'publisher': book.publisher,
             'image': book.image_url,
             'isbn': book.isbn,
@@ -613,8 +629,10 @@ class Goodreads(object):
         Get the reviews for a book given a Goodreads book id: http://www.goodreads.com/api#book.show.
         XML responses also include shelves and book meta-data (title, author, et cetera).
         '''
-        raise NotImplementedError
-        self.dev_get('book/show?format=FORMAT')
+        r = self.dev_get('book/show?format=FORMAT',{'id':book_id})
+        o = object_from_string(r.content)
+        book = GoodreadsBook.from_element(o.book)
+        return book
         # Parameters:     format: xml or json    key: Developer key (required).
         # id: A Goodreads internal book_id    text_only: Only show reviews that
         # have text (default false)    rating: Show only reviews with a

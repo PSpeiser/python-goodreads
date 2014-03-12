@@ -11,15 +11,22 @@ Tests for `goodreads` module.
 import unittest
 
 from goodreads import goodreads
-
+from config import DEVELOPER_KEY, DEVELOPER_SECRET
 
 class TestGoodreads(unittest.TestCase):
 
     def setUp(self):
-        pass
+        self.g = goodreads.Goodreads(DEVELOPER_KEY,DEVELOPER_SECRET)
+
 
     def test_something(self):
         pass
+
+    def test_book(self):
+        book = self.g.book(123)
+        assert book.title == 'The Power of One'
+        assert book.isbn == '385732546'
+
 
     def tearDown(self):
         pass
